@@ -1,4 +1,4 @@
-from fastapi import Body, Query, APIRouter
+from fastapi import Body, HTTPException, Query, APIRouter
 
 from schemas.hotels import Gym, GymPatch
 
@@ -20,8 +20,24 @@ gyms = [
 def get_gyms(
     id: int | None = Query(default=None, description="Id Спортазала"),
     title: str | None = Query(default=None, description="Название спортазала"),
+    page: int | None = Query(default=1, description="Страницы"),
+    per_page: int | None = Query(default=2, description="Количество запросов"),
 ):
-    return [gym for gym in gyms if gym["title"] == title or gym["id"] == id]
+    filtered_gyms = [gym for gym in gyms if (title is None or gym["title"] == title) and (id is None or gym["id"] == id)]
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_gyms = filtered_gyms[start:end]
+    
+    if len(paginated_gyms) == 0 and page > 1:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    return {
+        "page": page,
+        "per_page": per_page,
+        "total": len(filtered_gyms),
+        "gyms": paginated_gyms,
+    }
 
 
 @router.put("/{gym_id}")
