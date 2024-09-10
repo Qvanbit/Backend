@@ -16,7 +16,37 @@ def get_gyms(
 ):
     return [gym for gym in gyms if gym["title"] == title or gym["id"] == id]
 
+@app.put('/gyms/{gym_id}')
+def update_gym(
+        gym_id: int,
+        title: str = Body(embed=True),
+        city: str = Body(embed=True),
+):
+        global gyms
+        gym = next((gym for gym in gyms if gym["id"] == gym_id), None)
+        if gym:
+            gym["title"] = title
+            gym["city"] = city
+            return {"status": "Success"}
+        else:
+            return {"status": "Gym not found"}
 
+@app.patch('/gyms/{gym_id}')
+def update_gym_partial(
+        gym_id: int,
+        title: str | None = Body(embed=True, default=None),
+        city: str | None  = Body(embed=True, default=None),
+):
+        global gyms
+        gym = next((gym for gym in gyms if gym["id"] == gym_id), None)
+        if gym:
+            if title:
+                gym["title"] = title
+            if city:
+                gym["city"] = city
+            return {"status": "Success"}
+        else:
+            return {"status": "Gym not found"}
         
 
 @app.post("/gyms")
