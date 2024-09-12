@@ -1,10 +1,10 @@
 from pydantic import BaseModel, Field
 
 
-class Gym(BaseModel):
+class Hotel(BaseModel):
     title: str
     city: str
     
-class GymPatch(BaseModel):
+class HotelPatch(BaseModel):
     title: str | None =  Field(None)
     city: str | None = Field(None)
