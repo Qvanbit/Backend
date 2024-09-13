@@ -1,13 +1,15 @@
 from sqlalchemy import func, select
 
+from schemas.hotels import Hotel
 from src.models.hotels import HotelsORM
-from src.repositories.base import BasePepository
+from src.repositories.base import BaseRepository
 
 
-class HotelsRepository(BasePepository):
+class HotelsRepository(BaseRepository):
     model = HotelsORM
+    schema = Hotel
 
-    async def get_all(self, location, title, limit, offset):
+    async def get_all(self, location, title, limit, offset) -> list[Hotel]:
         query = select(HotelsORM)
         if title:
             query = query.filter(
@@ -19,4 +21,4 @@ class HotelsRepository(BasePepository):
             )
         query = query.limit(limit=limit).offset(offset=offset)
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return [Hotel.model_validate(hotel, from_attributes=True) for hotel in result.scalars().all()]

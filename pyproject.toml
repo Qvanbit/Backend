@@ -15,6 +15,8 @@ sqlalchemy = "^2.0.34"
 alembic = "^1.13.2"
 asyncpg = "^0.29.0"
 black = "^24.8.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+pyjwt = "^2.9.0"
 
 
 [build-system]
