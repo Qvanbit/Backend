@@ -28,18 +28,14 @@ async def get_hotels(
 
 
 @router.put("/{gym_id}")
-def update_hotel(
+async def update_hotel(
     hotel_id: int,
     hotel_data: Hotel,
 ):
-    global hotels
-    hotel = [hotel for hotel in hotels if hotel["id"] == hotel_id][0]
-    if hotel:
-        hotel["title"] = hotel_data.title
-        hotel["city"] = hotel_data.city
-        return {"status": "Success"}
-    else:
-        return {"status": "Hotel not found"}
+    async with async_session_maker() as session:
+        await HotelsRepository(session=session).edit(data=hotel_data, id=hotel_id)
+        await session.commit()
+        return {"status": "Success"}     
 
 
 @router.patch(
@@ -82,7 +78,7 @@ async def create_hotel(
     ),
 ):
     async with async_session_maker() as session:
-        hotel = await HotelsRepository(session=session).add(**hotel_data.model_dump())
+        hotel = await HotelsRepository(session=session).add(hotel_data)
         await session.commit()
         return {"status": "Success",
                 "data": hotel,
@@ -90,7 +86,9 @@ async def create_hotel(
 
 
 @router.delete("/{hotel_id}")
-def delete_hotel(hotel_id: int):
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
-    return {"status": "Success"}
+async def delete_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        await HotelsRepository(session=session).delete(id=hotel_id)
+        await session.commit()
+        return {"status": "Success"}
+
