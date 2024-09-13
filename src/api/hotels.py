@@ -1,9 +1,7 @@
 from fastapi import Body, Query, APIRouter
 
-from sqlalchemy import insert
-
 from src.repositories.hotels import HotelsRepository
-from src.models.hotels import HotelsORM
+
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPatch
 from src.database import async_session_maker
@@ -25,10 +23,15 @@ async def get_hotels(
             offset=per_page * (pagination.page - 1),
             limit=per_page,
     )
-
+        
+        
+@router.get("/{hotel_id}")
+async def get_hotel_by_id(hotel_id: int):
+    async with async_session_maker() as session:
+        return await HotelsRepository(session=session).get_one_or_none(id=hotel_id)
 
 @router.put("/{gym_id}")
-async def update_hotel(
+async def edit_hotel(
     hotel_id: int,
     hotel_data: Hotel,
 ):
@@ -43,17 +46,11 @@ async def update_hotel(
     summary="Частичное обновление данных об отеле",
     description="Тут можно частично обновить данных об отеле",
 )
-def update_hotel_partial(hotel_id: int, hotel_data: HotelPatch):
-    global hotels
-    hotel = [hotel for hotel in hotels if hotel["id"] == hotel_id][0]
-    if hotel:
-        if hotel_data.title:
-            hotel["title"] = hotel_data.title
-        if hotel_data.city:
-            hotel["city"] = hotel_data.city
+async def update_hotel_partial(hotel_id: int, hotel_data: HotelPatch):
+    async with async_session_maker() as session:
+        await HotelsRepository(session=session).edit(hotel_data, id=hotel_id, exclude_unset=True)
+        await session.commit()
         return {"status": "Success"}
-    else:
-        return {"status": "Hotel not found"}
 
 
 @router.post("/")
