@@ -42,7 +42,7 @@ async def login_user(
         return {"access_token": access_token}
     
     
-@router.patch("/logout")
+@router.post("/logout")
 async def logout_user(
     response: Response,
 ):
