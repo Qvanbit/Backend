@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import Body, Query, APIRouter
 
 from src.api.dependencies import DBDep, PaginationDep
@@ -12,15 +13,25 @@ async def get_hotels(
     db: DBDep,
     location: str | None = Query(default=None, description="Локация отеля"),
     title: str | None = Query(default=None, description="Название Отеля"),
+    date_from: date = Query(example="2024-10-01"),
+    date_to: date = Query(example="2024-10-31"),
 ):
     per_page = pagination.per_page or 5
-    return await db.hotels.get_all(
-        location=location,
-        title=title,
-        offset=per_page * (pagination.page - 1),
-        limit=per_page,
-    )
+    # return await db.hotels.get_all(
+    #     location=location,
+    #     title=title,
+    #     offset=per_page * (pagination.page - 1),
+    #     limit=per_page,
+    # )
 
+    return await db.hotels.get_filtered_by_time(
+        # location=location,
+        # title=title,
+        # offset=per_page * (pagination.page - 1),
+        # limit=per_page,
+        date_from=date_from,
+        date_to=date_to,
+    )
 
 @router.get("/{hotel_id}")
 async def get_hotel_by_id(
@@ -30,7 +41,7 @@ async def get_hotel_by_id(
     return await db.hotels.get_one_or_none(id=hotel_id)
 
 
-@router.put("/{gym_id}")
+@router.put("/{hotel_id}")
 async def edit_hotel(
     db: DBDep,
     hotel_id: int,
@@ -58,6 +69,7 @@ async def create_hotel(
     hotel_data: HotelAdd = Body(),
 ):
     hotel = await db.hotels.add(hotel_data)
+    await db.commit()
     return {
         "status": "Success",
         "data": hotel,

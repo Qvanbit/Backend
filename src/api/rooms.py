@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import APIRouter, Body, Query
 
 from api.dependencies import DBDep
@@ -7,15 +8,17 @@ from schemas.room import RoomAdd, RoomPatch
 router = APIRouter(prefix="/hotels", tags=["Комнаты"])
 
 
-@router.get("/rooms/{hotel_id}")
+@router.get("/{hotel_id}/rooms")
 async def get_rooms(
     db: DBDep,
     hotel_id: int,
-    title: str | None = Query(default=None, description="Название команты"),
+    date_from: date = Query(example="2024-10-15"),
+    date_to: date = Query(example="2024-10-10"),
 ):
-    return await db.rooms.get_all(
+    return await db.rooms.get_filtered_bi_time(
         hotel_id=hotel_id,
-        title=title,
+        date_from=date_from,
+        date_to=date_to,
     )
 
 

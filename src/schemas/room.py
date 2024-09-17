@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class RoomAdd(BaseModel):
+    hotel_id: int
     title: str
     description: str | None = Field(None)
     price: int
