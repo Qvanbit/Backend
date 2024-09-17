@@ -69,3 +69,5 @@ async def delete_hotel(db: DBDep, hotel_id: int):
     await db.hotels.delete(id=hotel_id)
     await db.commit()
     return {"status": "Success"}
+
+
