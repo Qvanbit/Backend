@@ -33,6 +33,7 @@ async def add_room(
     room_data: RoomAdd = Body(),
 ):
     room = await db.rooms.add(room_data)
+    await db.commit()
     return {
         "status": "Success",
         "data": room,
@@ -47,6 +48,7 @@ async def edit_room_part(
     room_data: RoomPatch = Body(),
 ):
     await db.rooms.edit(room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
+    await db.commit()
     return {"status": "Success"}
 
 
@@ -57,6 +59,7 @@ async def delete_room(
     room_id: int,
 ):
     await db.rooms.delete(hotel_id=hotel_id, id=room_id)
+    await db.commit()
     return {"status": "Success"}
 
 
@@ -68,4 +71,5 @@ async def edit_room(
     room_data: RoomAdd = Body(),
 ):
     await db.rooms.edit(room_data, hotel_id=hotel_id, id=room_id)
+    await db.commit()
     return {"status": "Success"}
