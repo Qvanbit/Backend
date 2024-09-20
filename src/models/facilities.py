@@ -14,5 +14,5 @@ class RoomFacilitiesORM(Base):
     __tablename__ = "room_facilities"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    room__id: Mapped[int] = mapped_column(ForeignKey("rooms.id"))
-    facility__id: Mapped[int] = mapped_column(ForeignKey("facilities.id"))
+    room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"))
+    facility_id: Mapped[int] = mapped_column(ForeignKey("facilities.id"))
