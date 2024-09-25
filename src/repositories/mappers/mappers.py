@@ -1,4 +1,4 @@
-from models.bookings import BookingsORM
+from src.models.bookings import BookingsORM
 from src.schemas.facilities import Facilities
 from src.models.facilities import FacilitiesORM
 from src.models.users import UserORM
