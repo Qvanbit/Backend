@@ -2,7 +2,7 @@ from datetime import date
 from src.schemas.bookings import BookingAdd
 
 
-async def test_add_bookings(db):
+async def test_booking_crud(db):
     user_id = (await db.users.get_all())[0].id
     booking_data = BookingAdd(
         user_id=user_id,
@@ -20,9 +20,19 @@ async def test_add_bookings(db):
         price=1000,
     )
 
-    await db.bookings.add(booking_data)
-    await db.bookings.get_all()
-    await db.bookings.edit(booking_edit_data)
-    await db.bookings.delete()
-    
-    await db.commit()
+    new_booking = await db.bookings.add(booking_data)
+    booking = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert booking
+    assert booking.id == new_booking.id
+    assert booking.room_id == new_booking.room_id
+    assert booking.user_id == new_booking.user_id
+
+    await db.bookings.edit(booking_edit_data, id=new_booking.id)
+    updated_bookings = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert updated_bookings
+    assert updated_bookings.id == new_booking.id
+    assert updated_bookings.price != 100
+
+    await db.bookings.delete(id=new_booking.id)
+    delete_booking = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert not delete_booking

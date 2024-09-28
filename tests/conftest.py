@@ -1,9 +1,14 @@
 import json
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+
 from httpx import AsyncClient
 import pytest
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from src.api.dependencies import get_db
 from src.main import app
 from src.schemas.users import UserAdd, UserRequestAdd
 from src.services.auth import AuthService
@@ -12,6 +17,7 @@ from src.schemas.hotels import HotelAdd
 from src.database import Base, engine_new_pool
 from src.models import *
 from src.utils.db_manager import DBManager
+from src.database import async_session_maker_new_pool
 
 URL = "postgresql+asyncpg://postgres:password@localhost:5432/gg"
 
@@ -22,6 +28,10 @@ async_session_maker = async_sessionmaker(bind=engine_new_pool, expire_on_commit=
 @pytest.fixture()
 async def db():
     async with DBManager(session_factory=async_session_maker) as db:
+        yield db
+        
+async def get_db_null_pool():
+    async with DBManager(session_factory=async_session_maker_new_pool) as db:
         yield db
 
 @pytest.fixture(scope="session", autouse=True)
@@ -60,12 +70,16 @@ async def ac() -> AsyncClient: # type: ignore
     async with AsyncClient(app=app, base_url="http://localhost") as ac:
         yield ac
         
-# @pytest.fixture(scope="session", autouse=True)
-# async def auth_user(ac: AsyncClient, setup_database):
-#     await ac.post(
-#         "/auth/register",
-#         json={
-#             "email": "test@exdample.com",
-#             "password": "test123"
-#         },
-#     )
+app.dependency_overrides[get_db] = get_db_null_pool
+        
+@pytest.fixture(scope="session")
+async def authenticated_ac(register_user, ac):
+    await ac.post(
+        "/auth/login",
+        json={
+            "email": "alexander@gmail.com",
+            "password": "1234",
+        },
+    )
+    assert ac.cookies["access_token"]
+    yield ac
