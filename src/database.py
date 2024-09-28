@@ -8,7 +8,9 @@ engine = create_async_engine(settings.DB_URL)
 engine_new_pool = create_async_engine(settings.DB_URL, poolclass=NullPool)
 
 async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
-async_session_maker_new_pool = async_sessionmaker(bind=engine_new_pool, expire_on_commit=False)
+async_session_maker_new_pool = async_sessionmaker(
+    bind=engine_new_pool, expire_on_commit=False
+)
 
 
 class Base(DeclarativeBase):

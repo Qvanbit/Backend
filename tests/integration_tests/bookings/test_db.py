@@ -11,7 +11,7 @@ async def test_booking_crud(db):
         date_to=date(year=2024, month=8, day=20),
         price=100,
     )
-    
+
     booking_edit_data = BookingAdd(
         user_id=user_id,
         room_id=2,

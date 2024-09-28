@@ -14,23 +14,28 @@ from src.schemas.hotels import Hotel
 class HotelDataMapper(DataMapper):
     db_model = HotelsORM
     schema = Hotel
-    
+
+
 class RoomDataMapper(DataMapper):
     db_model = RoomsORM
     schema = Room
-    
+
+
 class RoomDataWithRelsMapper(DataMapper):
     db_model = RoomsORM
     schema = RoomWithRels
-    
+
+
 class UserDataMapper(DataMapper):
     db_model = UserORM
     schema = User
-    
+
+
 class BookingDataMapper(DataMapper):
     db_model = BookingsORM
     schema = Booking
-    
+
+
 class FacilityDataMapper(DataMapper):
     db_model = FacilitiesORM
     schema = Facilities

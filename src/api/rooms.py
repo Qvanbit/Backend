@@ -1,6 +1,7 @@
 from datetime import date
 from fastapi import APIRouter, Body, Query
 
+from src.services.rooms import RoomService
 from src.api.dependencies import DBDep
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.room import RoomAdd, RoomAddRequest, RoomPatch, RoomPathRequest
@@ -16,7 +17,7 @@ async def get_rooms(
     date_from: date = Query(example="2024-10-15"),
     date_to: date = Query(example="2024-10-10"),
 ):
-    return await db.rooms.get_filtered_by_time(
+    return await RoomService(db=db).get_filtered_by_time(
         hotel_id=hotel_id,
         date_from=date_from,
         date_to=date_to,
@@ -25,7 +26,7 @@ async def get_rooms(
 
 @router.get("/room/{hotel_id}/{room_id}")
 async def get_room_by_id(db: DBDep, hotel_id: int, room_id: int):
-    return await db.rooms.get_one_or_none_with_rels(
+    return await RoomService(db=db).get_room_by_id(
         hotel_id=hotel_id,
         room_id=room_id,
     )
@@ -39,7 +40,10 @@ async def add_room(
 ):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(_room_data)
-    rooms_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
+    rooms_facilities_data = [
+        RoomFacilityAdd(room_id=room.id, facility_id=f_id)
+        for f_id in room_data.facilities_ids
+    ]
     await db.rooms_facilities.add_bulk(rooms_facilities_data)
     await db.commit()
     return {
@@ -59,7 +63,9 @@ async def edit_room_part(
     _room_data = RoomPatch(hotel_id=hotel_id, **_room_data_dict)
     await db.rooms.edit(_room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
     if "facilities_ids" in _room_data_dict:
-        await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=_room_data_dict["facilities_ids"])
+        await db.rooms_facilities.set_room_facilities(
+            room_id, facilities_ids=_room_data_dict["facilities_ids"]
+        )
     await db.commit()
     return {"status": "Success"}
 
@@ -84,6 +90,8 @@ async def edit_room(
 ):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     await db.rooms.edit(_room_data, hotel_id=hotel_id, id=room_id)
-    await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=room_data.facilities_ids)
+    await db.rooms_facilities.set_room_facilities(
+        room_id, facilities_ids=room_data.facilities_ids
+    )
     await db.commit()
     return {"status": "Success"}
